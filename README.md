@@ -46,8 +46,7 @@ nutri_agent/
 ├── prompts.py
 ├── query.txt
 ├── schema_and_tools.py
-├── images/
-│   ├── quirky.jpg
+├── test_images/
 │   ├── wrapper0.webp
 │   ├── wrapper3.jpg
 │   └── wrapper4.png

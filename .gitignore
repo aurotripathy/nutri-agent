@@ -25,5 +25,4 @@ env/
 
 # Local / generated
 *.log
-images/
 .DS_Store
