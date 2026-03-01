@@ -9,6 +9,8 @@ import argparse
 from collections import defaultdict
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def get_nutriments_from_open_food_facts(food_item: str) -> dict:
     """
@@ -34,7 +36,7 @@ def get_nutriments_from_open_food_facts(food_item: str) -> dict:
         timeout=10, # looks to be the minimum timeout
     )
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     logging.debug(f"Searching Open Food Facts for {food_item}")
     print(f"[🔧C] Toolcall: Searching Open Food Facts for {food_item}") # cant see this in the logs
@@ -72,6 +74,25 @@ def get_nutriments_from_open_food_facts(food_item: str) -> dict:
     return nutriments
 
 
+def filter_zero_value_categories_with_coverage(grouped: dict, min_group_ratio: float = 0.6) -> dict:
+    """
+    Excludes nutrient categories (groups) whose main 'value' is 0 or 0.0.
+    Returns the filtered dict only if remaining groups are at least min_group_ratio (e.g. 60%)
+    of the total number of groups; otherwise returns an empty dict.
+    Threshold is based on group count, not item (key-value) count.
+    """
+    filtered = {name: group for name, group in grouped.items() if group.get("value") not in (0, 0.0)}
+    total_groups = len(grouped)
+    logger.debug(f"Total groups: {total_groups}")
+    if total_groups == 0:
+        return filtered
+    remaining_groups = len(filtered)
+    logger.debug(f"Remaining non-zero value groups: {remaining_groups}")
+    if remaining_groups >= min_group_ratio * total_groups:
+        return filtered
+    return {}
+
+
 def group_nutriments(nutriments_dict: dict) -> dict:
     """
     Groups nutriments dictionary entries into a nested dictionary structure.
@@ -83,6 +104,8 @@ def group_nutriments(nutriments_dict: dict) -> dict:
         A nested dictionary where:
         - First level keys are the base nutrient names (before first delimiter)
         - Second level contains only entries with "_value", "_unit", and optionally "_serving"
+        - Categories whose main value is 0 are excluded.
+        - If fewer than 60% of groups remain after that filter, returns an empty dict.
     """
     # Step 1: Group entries by base name (before first "_")
     # Base name may contain '-' but should be extracted before the first '_'
@@ -132,7 +155,10 @@ def group_nutriments(nutriments_dict: dict) -> dict:
         # Only add the group if it has at least one filtered entry
         if filtered_group:
             grouped_result[base_name] = filtered_group
-    
+
+    # Drop entire categories whose main value is 0; return {} if fewer than 60% of groups remain
+    grouped_result = filter_zero_value_categories_with_coverage(grouped_result, min_group_ratio=0.6)
+
     return grouped_result
 
 def get_grouped_nutriments_from_open_food_facts(food_item: str) -> dict:
@@ -158,13 +184,17 @@ if __name__ == "__main__":
     
     search_term = args.search_term
     
-    print(f"{30*'-'} Search term: {search_term} {30*'-'}")
-    print(f"Getting nutriments for {search_term} from Open Food Facts and grouping them:")   
-    print(f"{60*'-'}")
+    logger.debug("%s Search term: %s %s", 30 * "-", search_term, 30 * "-")
+    logger.debug("Getting nutriments for %s from Open Food Facts and grouping them.", search_term)
+    logger.debug("%s", 60 * "-")
 
     grouped_nutriments = get_grouped_nutriments_from_open_food_facts(search_term)
-    for nutrient_name, nutrient_data in grouped_nutriments.items():
-        print(f"{nutrient_name}: {nutrient_data}\n")
+    if not grouped_nutriments:
+        logger.debug("Group nutriments are empty (no results or fewer than 60%% of groups retained).")
+        logger.debug("Result: %s", grouped_nutriments)
+    else:
+        for nutrient_name, nutrient_data in grouped_nutriments.items():
+            print(f"{nutrient_name}: {nutrient_data}")
 
     # Legacy code: getting nutriments from Open Food Facts flat (un-grouped), one line per nutrient
     # print(f"{30*'-'} Search term: {search_term} {30*'-'}")
