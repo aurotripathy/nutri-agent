@@ -1,6 +1,6 @@
 ## nutri_agent
 
-Google ADK Multi-Agent Nutrition Application
+Multi-Agent Nutrition Application built with Google ADK 
 
 ## Agents-Tools Interaction
 
