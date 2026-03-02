@@ -8,6 +8,7 @@ from .prompts import INGREDIENTS_GENERATOR_INSTRUCTIONS, INGREDIENTS_GENERATOR_D
 from .prompts import SEARCH_AGENT_INSTRUCTIONS, SEARCH_AGENT_DESCRIPTION
 import sys
 import os
+import json
 # Add project root to path for config import
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 if project_root not in sys.path:
@@ -163,31 +164,52 @@ def after_tool_callback_ingredients_generator_agent(
         # Handle search_ingredients_agent (AgentTool) response
         print(f"[T] [SEARCH_AGENT OUTPUT] Tool: {tool.name}")
         print(f"[T] [SEARCH_AGENT OUTPUT] Result type: {type(tool_response)}")
-        
-        if isinstance(tool_response, dict) and tool_response:
-            # Save to session state - ensure we save to the actual session
-            if hasattr(tool_context, 'session') and tool_context.session:
-                tool_context.session.state['ingredients_list_and_ailment'] = tool_response
-                print(f">>> ✅ Saved ingredients_list_and_ailment to tool_context.session.state from search_ingredients_agent")
-                print(f">>> [STATE] Verification: {tool_context.session.state.get('ingredients_list_and_ailment') is not None}")
-            
-            # Also save to tool_context.state
-            tool_context.state['ingredients_list_and_ailment'] = tool_response
-            print(f">>> ✅ Also saved to tool_context.state from search_ingredients_agent")
-            
-            # Also try invocation context
-            try:
-                if hasattr(tool_context, 'invocation_context'):
-                    inv_context = tool_context.invocation_context
-                    if hasattr(inv_context, 'session'):
-                        inv_context.session.state['ingredients_list_and_ailment'] = tool_response
-                        print(f">>> ✅ Also saved via invocation_context.session.state from search_ingredients_agent")
-            except Exception as e:
-                print(f">>> [STATE] Could not access via invocation_context: {e}")
-            
-            print(f"[T] [SEARCH_AGENT OUTPUT] Result keys: {list(tool_response.keys())}")
+
+        # jam the tool_response into the tool_context.state
+        if hasattr(tool_response, 'ingredients'):
+            tool_context.state['ingredients_list_and_ailment'] = tool_response['ingredients']
         else:
-            print(f"[T] [SEARCH_AGENT OUTPUT] Result: {tool_response}")
+            tool_context.state['ingredients_list_and_ailment'] = tool_response
+        print(f">>> ✅ Saved ingredients_list_and_ailment to tool_context.state from search_ingredients_agent")
+        print(f">>> [STATE] Verification: {tool_context.state.get('ingredients_list_and_ailment') is not None}")
+        
+        # # Normalize: use dict as-is; if str, parse JSON to dict
+        # if isinstance(tool_response, dict):
+        #     data = tool_response
+        # elif isinstance(tool_response, str):
+        #     try:
+        #         parsed = json.loads(tool_response)
+        #         data = parsed if isinstance(parsed, dict) else None
+        #     except (json.JSONDecodeError, TypeError):
+        #         data = None
+        # else:
+        #     data = None
+        # print(f"[T] [SEARCH_AGENT OUTPUT] Data type: {type(data)}\n Data: {data}")
+        # if data is not None:
+        #     print(f"[T] [SEARCH_AGENT OUTPUT] Result is a valid dict: {data} saving to session state")
+        #     if hasattr(tool_context, 'session') and tool_context.session:
+        #         tool_context.session.state['ingredients_list_and_ailment'] = data
+        #         print(f">>> ✅ Saved ingredients_list_and_ailment to tool_context.session.state from search_ingredients_agent")
+        #         print(f">>> [STATE] Verification: {tool_context.session.state.get('ingredients_list_and_ailment') is not None}")
+        #     else:
+        #         print(f">>> ⚠️ Could not find session object in tool_context")
+        #     # Also save to tool_context.state
+        #     tool_context.state['ingredients_list_and_ailment'] = data
+        #     print(f">>> ✅ Also saved to tool_context.state from search_ingredients_agent")
+            
+        #     # Also try invocation context
+        #     try:
+        #         if hasattr(tool_context, 'invocation_context'):
+        #             inv_context = tool_context.invocation_context
+        #             if hasattr(inv_context, 'session'):
+        #                 inv_context.session.state['ingredients_list_and_ailment'] = data
+        #                 print(f">>> ✅ Also saved via invocation_context.session.state from search_ingredients_agent")
+        #     except Exception as e:
+        #         print(f">>> [STATE] Could not access via invocation_context: {e}")
+            
+        #     print(f"[T] [SEARCH_AGENT OUTPUT] Result keys: {list(data.keys())}")
+        # else:
+        #     print(f"[T] ⚠️ [SEARCH_AGENT OUTPUT] Result may not be a valid JSON: {tool_response}")
     
     elif tool.name == "get_nutriments_from_OCRd_image_file":
         print(f"[T] [OCRD IMAGE OUTPUT] Tool: {tool.name}")
