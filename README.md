@@ -2,7 +2,7 @@
 
 Google ADK Multi-Agent Nutrition Application
 
-## Architecture
+## Agents-Tools Interaction
 
 ```
                     ┌─────────────────────────┐
