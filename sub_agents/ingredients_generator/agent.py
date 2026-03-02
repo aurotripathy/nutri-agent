@@ -90,7 +90,7 @@ def before_tool_callback_ingredients_generator_agent(
         None: Proceed with normal tool execution.
         Dict: Skip execution and return this result instead.
     """
-    print(f"[Bf🔧CB] Before_tool_callback triggered for tool: {tool.name}, args: {args} Tool Context - Agent Name: {tool_context.agent_name}")
+    print(f"[Bf🔧CB] Before_tool_callback triggered for tool: {tool.name}, args: {args} Tool Context.Agent Name: {tool_context.agent_name}")
     return None
 
 
@@ -109,7 +109,7 @@ def after_tool_callback_ingredients_generator_agent(
         None: Use the tool's actual result.
         Dict: Override the result with this value instead.
     """
-    print(f"[Af🔧CB] After_tool_callback triggered for tool: {tool.name}, args: {args} Tool Context - Agent Name: {tool_context.agent_name}")
+    print(f"[Af🔧CB] After_tool_callback triggered for tool: {tool.name}, args: {args} Tool Context.Agent Name: {tool_context.agent_name}")
 
     print(f"[Af🔧CB] Tool response: {tool_response}")
     
@@ -222,20 +222,20 @@ def after_agent_callback_search_ingredients_agent(callback_context: CallbackCont
     
     Verifies that ingredients data is in session state (saved by after_tool_callback).
     """
-    print(f"[Af🔍🤖CB] After_agent_callback triggered for agent: {callback_context.agent_name}")
+    print(f"[Af🤖CB] After_agent_callback triggered for agent: {callback_context.agent_name}")
     
     # Check if ingredients data is in session state (should have been saved by after_tool_callback)
     session_state = callback_context.session.state
     
     if 'ingredients_list_and_ailment' in session_state:
         data = session_state.get('ingredients_list_and_ailment')
-        print(f"[Af🔍🤖CB] ✅ ingredients_list_and_ailment found in session state")
-        print(f"[Af🔍🤖CB] Data type: {type(data)}")
+        print(f"[Af🤖CB] ✅ ingredients_list_and_ailment found in session state")
+        print(f"[Af🤖CB] Data type: {type(data)}")
         if isinstance(data, dict):
             print(f"[Af🔍🤖CB] Data keys: {list(data.keys()) if data else 'empty dict'}")
     else:
-        print(f"[Af🔍🤖CB] ⚠️ ingredients_list_and_ailment NOT found in session state")
-        print(f"[Af🔍🤖CB] Note: Data should have been saved by after_search_ingredients_agent_tool_callback")
+        print(f"[Af🤖CB] ⚠️ ingredients_list_and_ailment NOT found in session state")
+        print(f"[Af🤖CB] ⚠️ Note: Data should have been saved by after_search_ingredients_agent_tool_callback")
     
     return None
 
