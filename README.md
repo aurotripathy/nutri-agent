@@ -3,28 +3,7 @@
 Multi-Agent Nutrition Application built with Google ADK 
 
 ## Agents-Tools Interaction
-
-```
-                    ┌─────────────────────────┐
-                    │  orchestrator_agent     │
-                    │    (Root Agent)         │
-                    └───────────┬─────────────┘
-                                │
-                ┌───────────────┼───────────────┐
-                │               │               │
-                ▼               ▼               ▼
-    ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐
-    │ greetings_handler│  │ farewell_handler │  │ ingredients_generator│
-    │    (Sub-Agent)   │  │   (Sub-Agent)    │  │    (Sub-Agent)       │
-    └──────────────────┘  └──────────────────┘  └──────────┬───────────┘
-                                                            │
-                                                            │ (agent-as-tool)
-                                                            ▼
-                                                    ┌──────────────────┐
-                                                    │ disease_analyzer │
-                                                    │  (Agent-as-Tool) │
-                                                    └──────────────────┘
-```
+![](./agent-tool-interaction.png)
 
 ### Components
 
