@@ -1,4 +1,4 @@
-# v3_nutri_agent
+## nutri_agent
 
 Google ADK Multi-Agent Nutrition Application
 
